@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  php:
+    build: ./dev-ops/docker/php/.
+#    context: ./dev-ops/docker/php
+    networks:
+      - LEMP
+    volumes:
+#      - ./html/:/var/www/html
+      - ./dev-ops/docker/entrypoint:/entrypoint
+      - ./dev-ops/docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./dev-ops/docker/xdebug/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+
+    entrypoint: sh /entrypoint/entrypoint-php.sh
+    ports:
+      - "9000:9000"
+  nginx:
+    image: nginx:1.12-alpine
+    networks:
+      - LEMP
+    ports:
+      - "80:80"
+    volumes:
+#      - ./html/:/var/www/html
+      - ./dev-ops/docker/entrypoint:/entrypoint
+      - ./dev-ops/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - db
+  db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    networks:
+      - LEMP
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - LEMP
+networks:
+  LEMP:
