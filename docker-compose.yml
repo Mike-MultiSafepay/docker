@@ -10,6 +10,7 @@ services:
       - ./dev-ops/docker/entrypoint:/entrypoint
       - ./dev-ops/docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
       - ./dev-ops/docker/xdebug/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+      - ./dev-ops/docker/xdebug/docker-php-memlimit.ini:/usr/local/etc/php/conf.d/docker-php-memlimit.ini
 
     entrypoint: sh /entrypoint/entrypoint-php.sh
     ports:
