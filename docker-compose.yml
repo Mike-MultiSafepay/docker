@@ -1,46 +1,33 @@
-version: "3.9"
+version: "3"
 services:
-  php:
-    build: ./dev-ops/docker/php/.
-#    context: ./dev-ops/docker/php
-    networks:
-      - LEMP
-    volumes:
-#      - ./html/:/var/www/html
-      - ./dev-ops/docker/entrypoint:/entrypoint
-      - ./dev-ops/docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-      - ./dev-ops/docker/xdebug/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
-      - ./dev-ops/docker/xdebug/docker-php-memlimit.ini:/usr/local/etc/php/conf.d/docker-php-memlimit.ini
-
-    entrypoint: sh /entrypoint/entrypoint-php.sh
-    ports:
-      - "9000:9000"
-  nginx:
-    image: nginx:1.12-alpine
-    networks:
-      - LEMP
+  shopware:
+    # use either tag "latest" or any other version like "6.1.5", ...
+    build: ./dev-ops/docker/
+    container_name: shopware
+    command: 'sh /entrypoint-multisafepay.sh'
     ports:
       - "80:80"
+      - "3306:3306"
+      - "22:22"
+      - "8888:8888"
+      - "9999:9999"
     volumes:
-#      - ./html/:/var/www/html
-      - ./dev-ops/docker/entrypoint:/entrypoint
-      - ./dev-ops/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    links:
-      - db
-  db:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
+      - "db_volume:/var/lib/mysql"
+      - "shop_volume:/var/www/html"
     networks:
-      - LEMP
+      - web
     environment:
-      MYSQL_ROOT_PASSWORD: example
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-    networks:
-      - LEMP
+      # default = 0, recommended to be OFF for frontend devs
+      - XDEBUG_ENABLED=1
+      # default = latest PHP, optional = specific version
+      - PHP_VERSION=7.4
+
+volumes:
+  db_volume:
+    driver: local
+  shop_volume:
+    driver: local
+
 networks:
-  LEMP:
+  web:
+    external: false
